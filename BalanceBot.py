@@ -2,6 +2,7 @@
 from chatterbot import ChatBot
 from chatterbot.trainers import ListTrainer
 from tkinter import *
+from PIL import Image, ImageTk
 import pandas as pd
 import string
 import os
@@ -11,7 +12,6 @@ import os
 dir = os.path.abspath(os.path.dirname(__file__))
 # -> open data file with this directory
 data_file_address = os.path.join(dir, "DataTrainChatBot.csv")
-botbackground = os.path.join(dir, "Pictures/botbackground.png")
 
 ## READ AND DEFINE DATA VARIABLES
 df = pd.read_csv(data_file_address)
@@ -43,7 +43,6 @@ for pair in training_list:
 def handle_query(query):
     exit_conditions = (":q", "quit", "exit")
     while True:
-        #query = input("> ")
         query = query.lower()
         # Remove punctuation from input
         query = query.translate(str.maketrans('', '', string.punctuation))
@@ -78,7 +77,6 @@ def send():
     txt.insert(END, "\n" + "Bot -> "+str(response))
     e.delete(0, END)
 
-# GUI
 def center_window(width=300, height=200):
     # get screen width and height
     screen_width = root.winfo_screenwidth()
@@ -89,26 +87,49 @@ def center_window(width=300, height=200):
     y = (screen_height/2) - (height/2)
     root.geometry('%dx%d+%d+%d' % (width, height, x, y))
 
+firstclick = True
+
+def on_entry_click(event):
+    """function that gets called whenever entry1 is clicked"""
+    global firstclick
+
+    if firstclick: # if this is the first time they clicked it
+        firstclick = False
+        e.delete(0, "end") # delete all the text in the entry
+
 root = Tk()
-root.geometry("530x470")
+root.geometry("960x540")
+root.minsize(960,540)
+root.maxsize(960,540)
 root.title("BalanceBot")
 
 BG_GRAY = "#ABB2B9"
-BG_COLOR = "#17202A"
-TEXT_COLOR = "#EAECEE"
+BG_GREEN = "#DAF7A6"
+TEXT_COLOR = "#366282"
 FONT = "Helvetica 14"
 FONT_BOLD = "Helvetica 13 bold"
 
-lable1 = Label(root, bg=BG_COLOR, fg=TEXT_COLOR, text="Welcome", font=FONT_BOLD, pady=10, width=20, height=1).grid(row=0)
+bg = PhotoImage(file="Pictures/chatboxbg.png")
 
-txt = Text(root, bg=BG_COLOR, fg=TEXT_COLOR, font=FONT, width=65, wrap=WORD)
-txt.grid(row=1, column=0, columnspan=2)
+# Show image using label
+label1 = Label(root, image=bg)
+label1.place(x=-2, y=-2)
 
+# Chat Box
+txt = Text(root, bg=BG_GREEN, fg=TEXT_COLOR, font=FONT, height=23, width=106, wrap=WORD)
+txt.place(x=53, y=54)
+
+# Scroll Bar
 scrollbar = Scrollbar(txt)
-scrollbar.place(relheight=1, relx=0.974)
+scrollbar.place(relheight=1, relx=0.974, width=15)
 
-e = Entry(root, bg="#2C3E50", fg=TEXT_COLOR, font=FONT, width=55)
-e.grid(row=2, column=0)
+# Query Entry
+e = Entry(root, bg="#CAFA70", fg=TEXT_COLOR, font=FONT, width=105)
+e.insert(0, 'Begin by entering query here; to quit BalanceBot, close window.')
+e.bind('<FocusIn>', on_entry_click)
+e.place(x=53, y=430)
 
-send = Button(root, text="Send", font=FONT_BOLD, bg=BG_GRAY, command=send).grid(row=2, column=1)
+# Send Button
+send = Button(root, text="Send", font=FONT_BOLD, bg=BG_GRAY, command=send)
+send.place(x=839, y=430)
 root.mainloop()
