@@ -1,9 +1,7 @@
 # pip install chatterbot==1.0.4
 from chatterbot import ChatBot
 from chatterbot.trainers import ListTrainer
-#from turtle import color
-#from matplotlib.ft2font import BOLD
-import tkinter as tk
+from tkinter import *
 import pandas as pd
 import string
 import os
@@ -39,82 +37,78 @@ training_list = []
 for i in range(len(X_list)):
     pair = [X_list[i], y_list[i]]
     training_list.append(pair)
-print(training_list)
 for pair in training_list:
     trainer.train(pair)
 
-exit_conditions = (":q", "quit", "exit")
-while True:
-    query = input("> ")
-    query = query.lower()
-    # Remove punctuation from input
-    query = query.translate(str.maketrans('', '', string.punctuation))
-    # Log which words are in database
-    input_word_list = query.split()
-    keywords = []
-    for item in input_word_list:
-        if item in X_list:
-            keywords.append(item)
-    # remove repeated occurrences of keywords
-    keywords = list(set(keywords))
-    response = ""
-    if query in exit_conditions:
-        break
-    elif len(keywords) == 0:
-        y_list_resource_index = [index for (index, item) in enumerate(X_list) if item == "if beyond the data's comprehension."]
-        response = str(y_list[y_list_resource_index[0]])
-    else:
-        for word in keywords:
-            response = response + ' ' + str(chatbot.get_response(word))
-    print(response)
+def handle_query(query):
+    exit_conditions = (":q", "quit", "exit")
+    while True:
+        #query = input("> ")
+        query = query.lower()
+        # Remove punctuation from input
+        query = query.translate(str.maketrans('', '', string.punctuation))
+        # Log which words are in database
+        input_word_list = query.split()
+        keywords = []
+        for item in input_word_list:
+            if item in X_list:
+                keywords.append(item)
+        # remove repeated occurrences of keywords
+        keywords = list(set(keywords))
+        response = ""
+        if query in exit_conditions:
+            break
+        elif len(keywords) == 0:
+            y_list_resource_index = [index for (index, item) in enumerate(X_list) if
+                                     item == "if beyond the data's comprehension."]
+            response = str(y_list[y_list_resource_index[0]])
+        else:
+            for word in keywords:
+                response = response + ' ' + str(chatbot.get_response(word))
+        return response
+
 
 ## GUI FUNCTIONS ##
-def round_rectangle(x1, y1, x2, y2, radius=25, **kwargs):
-    points = [x1+radius, y1,
-              x1+radius, y1,
-              x2-radius, y1,
-              x2-radius, y1,
-              x2, y1,
-              x2, y1+radius,
-              x2, y1+radius,
-              x2, y2-radius,
-              x2, y2-radius,
-              x2, y2,
-              x2-radius, y2,
-              x2-radius, y2,
-              x1+radius, y2,
-              x1+radius, y2,
-              x1, y2,
-              x1, y2-radius,
-              x1, y2-radius,
-              x1, y1+radius,
-              x1, y1+radius,
-              x1, y1]
-    return canvas1.create_polygon(points, **kwargs, smooth=True)
-
+# Send function
+def send():
+    send = "You -> " + e.get()
+    txt.insert(END, "\n" + send)
+    query = str(e.get().lower())
+    response = handle_query(query)
+    txt.insert(END, "\n" + "Bot -> "+str(response))
+    e.delete(0, END)
 
 # GUI
-# Initialize GUI
-root = tk.Tk()
-canvas1 = tk.Canvas(root, width=600, height=300)
-root.resizable(False, False)
-canvas1.pack()
-# Size and background color of output GUI
-background = tk.PhotoImage(file=botbackground)
-background = background.subsample(1, 1)
-canvas1.create_image(300, 200, image=background)
-# Round edges of output GUI
-rect = round_rectangle(100, 105, 500, 225, fill="#d9a5b1")
-# Add title to output GUI
+def center_window(width=300, height=200):
+    # get screen width and height
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+
+    # calculate position x and y coordinates
+    x = (screen_width/2) - (width/2)
+    y = (screen_height/2) - (height/2)
+    root.geometry('%dx%d+%d+%d' % (width, height, x, y))
+
+root = Tk()
+root.geometry("530x470")
 root.title("BalanceBot")
-#titleArt=tk.PhotoImage(file=wordArt_address)
-#titleArt=titleArt.subsample(2,2)
-#canvas1.create_image(300, 55, image = titleArt)
-# Create entry box to collect input joke
-canvas1.create_text(300, 130, fill="white", font=('futura', 22), text='Start chat with BalanceBot. ')
-entry1 = tk.Entry(root, bd=0) # create 1st entry box
-canvas1.create_window(300, 160, width=350, window=entry1)
-# Button
-#button = tk.Button(root, font=('futura'), text='Enter', bd=0, command=values)
-#canvas1.create_window(300, 200, window=button)
+
+BG_GRAY = "#ABB2B9"
+BG_COLOR = "#17202A"
+TEXT_COLOR = "#EAECEE"
+FONT = "Helvetica 14"
+FONT_BOLD = "Helvetica 13 bold"
+
+lable1 = Label(root, bg=BG_COLOR, fg=TEXT_COLOR, text="Welcome", font=FONT_BOLD, pady=10, width=20, height=1).grid(row=0)
+
+txt = Text(root, bg=BG_COLOR, fg=TEXT_COLOR, font=FONT, width=65, wrap=WORD)
+txt.grid(row=1, column=0, columnspan=2)
+
+scrollbar = Scrollbar(txt)
+scrollbar.place(relheight=1, relx=0.974)
+
+e = Entry(root, bg="#2C3E50", fg=TEXT_COLOR, font=FONT, width=55)
+e.grid(row=2, column=0)
+
+send = Button(root, text="Send", font=FONT_BOLD, bg=BG_GRAY, command=send).grid(row=2, column=1)
 root.mainloop()
