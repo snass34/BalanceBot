@@ -4,27 +4,69 @@ from chatterbot.trainers import ListTrainer
 #from turtle import color
 #from matplotlib.ft2font import BOLD
 import tkinter as tk
+import pandas as pd
+import string
 import os
 
+## OPEN NECESSARY FILES
+# Path to prev dir contains this file
 dir = os.path.abspath(os.path.dirname(__file__))
+# -> open data file with this directory
+data_file_address = os.path.join(dir, "DataTrainChatBot.csv")
 botbackground = os.path.join(dir, "Pictures/botbackground.png")
+
+## READ AND DEFINE DATA VARIABLES
+df = pd.read_csv(data_file_address)
+# Independent variables
+X = df['Word']
+# Dependent variable
+y = df['Potential Response']
+
+X_list = X.values.tolist()
+y_list = y.values.tolist()
+
+# Convert lists to lowercase
+for i in range(len(X_list)):
+    X_list[i] = (str(X_list[i])).lower()
+    X_list[i] = (str(X_list[i])).strip()
+for i in range(len(y_list)):
+    y_list[i] = (str(y_list[i])).strip()
 
 chatbot = ChatBot('BalanceBot')
 trainer = ListTrainer(chatbot)
-l = [["Hi", "Welcome, friend 🤗",],
-     ["Hi", "bananas, friend",],
-     ["Are you a plant?", "No, I'm the pot below the plant!"]]
 
-for item in l:
-    trainer.train(item)
+training_list = []
+for i in range(len(X_list)):
+    pair = [X_list[i], y_list[i]]
+    training_list.append(pair)
+print(training_list)
+for pair in training_list:
+    trainer.train(pair)
 
 exit_conditions = (":q", "quit", "exit")
 while True:
     query = input("> ")
+    query = query.lower()
+    # Remove punctuation from input
+    query = query.translate(str.maketrans('', '', string.punctuation))
+    # Log which words are in database
+    input_word_list = query.split()
+    keywords = []
+    for item in input_word_list:
+        if item in X_list:
+            keywords.append(item)
+    # remove repeated occurrences of keywords
+    keywords = list(set(keywords))
+    response = ""
     if query in exit_conditions:
         break
+    elif len(keywords) == 0:
+        y_list_resource_index = [index for (index, item) in enumerate(X_list) if item == "if beyond the data's comprehension."]
+        response = str(y_list[y_list_resource_index[0]])
     else:
-        print(f"🪴 {chatbot.get_response(query)}")
+        for word in keywords:
+            response = response + ' ' + str(chatbot.get_response(word))
+    print(response)
 
 ## GUI FUNCTIONS ##
 def round_rectangle(x1, y1, x2, y2, radius=25, **kwargs):
